@@ -30,8 +30,7 @@ public:
 	void RecvData(CServerSocket* pSocket);						//获取数据
 	void UpdateEvent(CString str);								//更新事件日志
 	BOOL WChar2MByte(LPCWSTR strBuff,LPSTR destBuff,int nLen);	//字符转换
-	void SendCStringMsgToClient(CString str,CString strIp = _T(""),CString strPort = _T(""));	//发送CString消息给各个客户端
-	void SendMsgToClient(void* pMsg,int nMsgLen,CString strIp = _T(""),CString strPort = _T(""));	//通过指针发送消息给客户端
+	void SendMsgToClient(CString str,CString strIp = _T(""),CString strPort = _T(""));	//发送消息给各个客户端
 	virtual BOOL PreTranslateMessage(MSG* pMsg);				//重写，防止按下enter或esc时退出程序
 	void AddControlText(CString str);							//添加控制台信息
 	DataFunction* g_pDataFunction;								//处理各种数据的指针

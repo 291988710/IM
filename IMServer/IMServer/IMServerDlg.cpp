@@ -226,19 +226,46 @@ void CIMServerDlg::OnBnClickedDb()
 		strPwd = *ado1.iter_VecAccID->strPassword;
 		strDBInfo = strDBInfo + strAccId + _T("\t") + strPwd + _T("\r\n");
 	}
+	AddControlText(strDBInfo);
 
-	const char* str = "{\"uploadid\": \"UP000000\",\"code\": 100,\"msg\": \"\",\"files\": \"\"}";  
+	const char* str = "{\"uploadid\": \"UP000000\",\"code\": 100,\"msg\": \"dads\",\"files\": \"ffff\"}";  
+	/*
+	{"uploadid":"UP000000","code":100,"msg":"dads","files":"ffff"}
+	*/
 	Json::Reader reader;  
 	Json::Value root;  
 	if (reader.parse(str, root))  // reader将Json字符串解析到root，root将包含Json里所有子元素  
 	{  
 		string upload_id = root["uploadid"].asString();  // 访问节点，upload_id = "UP000000"  
 		int code = root["code"].asInt();    // 访问节点，code = 100 
+		string msg = root["msg"].asString();
+		string files = root["files"].asString();
 		CString strJsonTest;
-		strJsonTest.Format(_T("strJsonTest\t%s\t%d"),upload_id,code);
+		CString strUploadId;
+		strUploadId = upload_id.c_str();
+		CString strCode;
+		strCode.Format(_T("%d"),code);
+		CString strMsg;
+		strMsg = msg.c_str();
+		CString strFiles;
+		strFiles = files.c_str();
+		strJsonTest = strUploadId + _T("\r\n") + strCode + _T("\r\n") + strMsg + _T("\r\n") + strFiles;
 		AddControlText(strJsonTest);
 	}  
-	AddControlText(strDBInfo);
+
+	Json::Value root2;
+	Json::Value arrayObj;
+	Json::Value item1;
+	Json::Value item2;
+	item1 = "this waaa";
+	item2 = "cool";
+	arrayObj.append(item1);
+	arrayObj.append(item2);
+	root2["hello"] = arrayObj;
+	string strMsg = root2.toStyledString();
+	CString cstrMsg;
+	cstrMsg = strMsg.c_str();
+	AddControlText(cstrMsg);
 }
 
 /////////////////////////////////////////////////Socket函数/////////////////////////////////////////////////
@@ -341,7 +368,7 @@ void CIMServerDlg::UpdateEvent(CString str)
 
 BOOL CIMServerDlg::WChar2MByte(LPCWSTR strBuff,LPSTR destBuff,int nLen)
 {
-	//此函数在发送函数SendCStringMsgToClient中调用，用于字符集的转换，将宽字符转换为多字符集，不经转换的话，接收方只能接收一个字节。
+	//此函数在发送函数SendMsgToClient中调用，用于字符集的转换，将宽字符转换为多字符集，不经转换的话，接收方只能接收一个字节。
 	int n = 0;
 	n = WideCharToMultiByte(CP_OEMCP,0,strBuff,-1,destBuff,0,0,FALSE);
 	if (n < nLen)
@@ -352,7 +379,7 @@ BOOL CIMServerDlg::WChar2MByte(LPCWSTR strBuff,LPSTR destBuff,int nLen)
 	return TRUE;
 }
 
-void CIMServerDlg::SendCStringMsgToClient(CString str,CString strIp,CString strPort)
+void CIMServerDlg::SendMsgToClient(CString str,CString strIp,CString strPort)
 {
 	if (strIp.IsEmpty() && strPort.IsEmpty())
 	{
@@ -399,36 +426,6 @@ void CIMServerDlg::SendCStringMsgToClient(CString str,CString strIp,CString strP
 		}
 		delete pSend;
 	}
-}
-
-void CIMServerDlg::SendMsgToClient(void* pMsg,int nMsgLen,CString strIp /* = _T("") */,CString strPort /* = _T("") */)
-{
-	//pMsg是数据的指针，nMsgLen是数据的长度
-	char* pSend = new char[nMsgLen];
-	memset(pSend,0,nMsgLen);
-	memcpy(pSend,pMsg,nMsgLen);
-	if (!WChar2MByte((LPCWSTR)pMsg,pSend,nMsgLen))
-	{
-		AfxMessageBox(_T("字符转换失败"));
-		delete pSend;
-		return;
-	}
-	POSITION nPos = g_clientList.GetHeadPosition();
-	while (nPos)
-	{
-		CServerSocket* pTemp = (CServerSocket*)g_clientList.GetNext(nPos);
-		CString strIpTemp;
-		UINT uPortTemp;
-		pTemp->GetPeerName(strIpTemp,uPortTemp);
-		CString strPortTemp;
-		strPortTemp.Format(_T("%d"),uPortTemp);
-		if (strIp == strIpTemp && strPort == strPortTemp)
-		{
-			pTemp->Send(pSend,nMsgLen);
-			break;
-		}
-	}
-	delete pSend;
 }
 
 BOOL CIMServerDlg::PreTranslateMessage(MSG* pMsg)

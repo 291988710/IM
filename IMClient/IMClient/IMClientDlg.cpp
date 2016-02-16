@@ -1,9 +1,16 @@
 // IMClientDlg.cpp : 实现文件
 //
-
 #include "stdafx.h"
 #include "IMClient.h"
 #include "IMClientDlg.h"
+
+#include "json/json.h"
+
+#ifdef _DEBUG
+#pragma comment(lib."json_vc71_libmtd.lib")
+#else
+#pragma comment(lib."json_vc71_libmt.lib")
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -272,7 +279,26 @@ void CIMClientDlg::SendMsgToServer(CString str)
 void CIMClientDlg::ReceiveMsgFromServer(CString str)
 {
 	AddControlText(str);
-	SeperateMsgFromServer(str);
+	//Unicode下CString转char*
+	char *szTemp=new char[str.GetLength()+1];
+	WideCharToMultiByte(CP_ACP,0,str.GetBuffer(),-1,szTemp,str.GetLength()+1,NULL,NULL);
+
+	Json::Reader reader;  
+	Json::Value root;  
+	CString strJsonTest;
+	if (reader.parse(szTemp, root))  // reader将Json字符串解析到root，root将包含Json里所有子元素  
+	{  
+		int nMsgType = root["MsgType"].asInt();   
+		int nResult = root["Result"].asInt();    
+		CString strMsgType;
+		strMsgType.Format(_T("%d"),nMsgType);
+		CString strResult;
+		strResult.Format(_T("%d"),nResult);
+		strJsonTest = strMsgType + _T("\r\n") + strResult;
+		AddControlText(strJsonTest);
+	}  
+
+	/*SeperateMsgFromServer(str);
 	CString strMsgType = g_vecSeperatedData[0];
 	int nMsgType = _ttoi(strMsgType);
 	switch(nMsgType)
@@ -285,7 +311,7 @@ void CIMClientDlg::ReceiveMsgFromServer(CString str)
 		}
 	default:
 		break;
-	}
+	}*/
 }
 
 void CIMClientDlg::SeperateMsgFromServer(CString str)

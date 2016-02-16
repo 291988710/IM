@@ -1,6 +1,14 @@
 #include "StdAfx.h"
 #include "DataFunction.h"
 
+#include "json/json.h"
+
+#ifdef _DEBUG
+#pragma comment(lib."json_vc71_libmtd.lib")
+#else
+#pragma comment(lib."json_vc71_libmt.lib")
+#endif
+
 DataFunction::DataFunction(void)
 {
 	g_pAdo = new ado();
@@ -58,7 +66,11 @@ void DataFunction::DealWithDiffAction()
 void DataFunction::Func_ValidateAccountAndPassword(CString strAccount,CString strPassword,CString strIp,CString strPort)
 {
 	//获取数据库的数据
+	Json::Value jsonRoot;
+	jsonRoot["MsgType"] = eC2S_ValidateAccountAndPassword;
+
 	int nResult = g_pAdo->Ado_ValidateAccountAndPassword(strAccount,strPassword);
+	jsonRoot["Result"] = nResult;
 	if (nResult == eS2C_ValidateAccountAndPassword_OK)
 	{
 		//将Account和ip、port绑定在一起
@@ -72,10 +84,13 @@ void DataFunction::Func_ValidateAccountAndPassword(CString strAccount,CString st
 			g_pDlg->AddControlText(_T("绑定ip/port失败"));
 		}
 	}
-	CString strResult;
-	strResult.Format(_T("%d^%d"),eC2S_ValidateAccountAndPassword,nResult);
+	//CString strResult;
+	//strResult.Format(_T("%d^%d"),ES2C_ValidateAccountAndPassword,nResult);
+	string msg = jsonRoot.toStyledString();
+	CString strMsg;
+	strMsg = msg.c_str();
 	
-	g_pDlg->SendCStringMsgToClient(strResult,strIp,strPort);
+	g_pDlg->SendMsgToClient(strMsg,strIp,strPort);
 }
 
 void DataFunction::Func_RefreshOnlineState(CString strIp,CString strPort,CString strOnlineState)
@@ -95,6 +110,10 @@ void DataFunction::Func_QueryFriendList(CString strIp,CString strPort,CString st
 {
 	std::vector<CString> vecAccount;
 	int nResult = g_pAdo->Ado_QueryFriendList(strAccount,vecAccount);
+	Json::Value jsonRoot;
+	jsonRoot["MsgType"] = eC2S_QueryFriendList;
+	jsonRoot["Result"] = nResult;
+
 	if (nResult == eS2C_QueryFriendList_OK)
 	{
 		g_pDlg->AddControlText(_T("请求好友列表成功"));
@@ -103,19 +122,25 @@ void DataFunction::Func_QueryFriendList(CString strIp,CString strPort,CString st
 	{
 		g_pDlg->AddControlText(_T("请求好友列表失败"));
 	}
-	//用socket发送vector，socket只能发送原始的byte数据，而直接发送指针过去是无用的，因此只能先把vector序列化，用某种标识符将其分割开来，再发送，
-	//分批次发送,全部转为cstring类型发送。
-	void* pMsg = &vecAccount;
-	int nMsgLen = 0;
+	//用socket发送vector，socket只能发送原始的byte数据，而直接发送指针过去是无用的，采用json发送
+	Json::Value jsonAccountArray;
 	for (vector<CString>::iterator iter_vecAccount = vecAccount.begin();iter_vecAccount != vecAccount.end();iter_vecAccount++)
 	{
-		//用'~'来区分每个数据
-		if (iter_vecAccount == vecAccount.end())
-		{
-		}
-		*iter_vecAccount = *iter_vecAccount + _T("~");
+		Json::Value jsonAccount;
 		CString strTemp = *iter_vecAccount;
-		nMsgLen = nMsgLen + strTemp.GetLength();
+
+		//Unicode下CString转string
+		char *szTemp=new char[strTemp.GetLength()+1];
+		WideCharToMultiByte(CP_ACP,0,strTemp.GetBuffer(),-1,szTemp,strTemp.GetLength()+1,NULL,NULL);
+		string sTemp = szTemp;
+		jsonAccount = sTemp;
+
+		jsonAccountArray.append(jsonAccount);
 	}
-	g_pDlg->SendMsgToClient(pMsg,nMsgLen);
+	jsonRoot["Account"] = jsonAccountArray;
+	string msg = jsonRoot.toStyledString();
+	CString strMsg;
+	strMsg = msg.c_str();
+
+	g_pDlg->SendMsgToClient(strMsg,strIp,strPort);
 }
