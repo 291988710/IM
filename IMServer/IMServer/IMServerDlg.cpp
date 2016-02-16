@@ -7,6 +7,14 @@
 
 #include "ado.h"
 
+#include "json/json.h"
+
+#ifdef _DEBUG
+#pragma comment(lib."json_vc71_libmtd.lib")
+#else
+#pragma comment(lib."json_vc71_libmt.lib")
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -218,6 +226,18 @@ void CIMServerDlg::OnBnClickedDb()
 		strPwd = *ado1.iter_VecAccID->strPassword;
 		strDBInfo = strDBInfo + strAccId + _T("\t") + strPwd + _T("\r\n");
 	}
+
+	const char* str = "{\"uploadid\": \"UP000000\",\"code\": 100,\"msg\": \"\",\"files\": \"\"}";  
+	Json::Reader reader;  
+	Json::Value root;  
+	if (reader.parse(str, root))  // reader将Json字符串解析到root，root将包含Json里所有子元素  
+	{  
+		string upload_id = root["uploadid"].asString();  // 访问节点，upload_id = "UP000000"  
+		int code = root["code"].asInt();    // 访问节点，code = 100 
+		CString strJsonTest;
+		strJsonTest.Format(_T("strJsonTest\t%s\t%d"),upload_id,code);
+		AddControlText(strJsonTest);
+	}  
 	AddControlText(strDBInfo);
 }
 

@@ -1,9 +1,9 @@
-﻿// Created by Microsoft (R) C/C++ Compiler Version 15.00.21022.08 (0bf5fa47).
+﻿// Created by Microsoft (R) C/C++ Compiler Version 15.00.21022.08 (da670a13).
 //
-// e:\vsprojects\imserver\imserver\debug\msado15.tli
+// e:\git\im\imserver\imserver\debug\msado15.tli
 //
 // Wrapper implementations for type library C:\Program Files\Common Files\System\ado\msado15.dll
-// compiler-generated file created 01/07/16 at 17:12:11 - DO NOT EDIT!
+// compiler-generated file created 02/16/16 at 17:20:23 - DO NOT EDIT!
 
 #pragma once
 
