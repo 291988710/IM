@@ -289,13 +289,27 @@ void CIMClientDlg::ReceiveMsgFromServer(CString str)
 	if (reader.parse(szTemp, root))  // reader将Json字符串解析到root，root将包含Json里所有子元素  
 	{  
 		int nMsgType = root["MsgType"].asInt();   
-		int nResult = root["Result"].asInt();    
-		CString strMsgType;
-		strMsgType.Format(_T("%d"),nMsgType);
-		CString strResult;
-		strResult.Format(_T("%d"),nResult);
-		strJsonTest = strMsgType + _T("\r\n") + strResult;
-		AddControlText(strJsonTest);
+		switch(nMsgType)
+		{
+		case eS2C_ValidateAccountAndPassword:
+			{
+				int nResult = root["Result"].asInt();
+				CString strResult;
+				strResult.Format(_T("%d"),nResult);
+				Func_OnValidateAccountAndPassword(strResult);
+				break;
+			}
+		case eS2C_QueryFriendList:
+			{
+				int nResult = root["Result"].asInt();
+				CString strResult;
+				strResult.Format(_T("%d"),nResult);
+
+				break;
+			}
+		default:
+			break;
+		}
 	}  
 
 	/*SeperateMsgFromServer(str);

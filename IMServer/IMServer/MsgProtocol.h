@@ -11,6 +11,12 @@ enum EC2S_MsgType
 	eC2S_QueryFriendList,
 };
 
+enum ES2C_MsgType
+{
+	eS2C_ValidateAccountAndPassword,
+	eS2C_QueryFriendList,
+};
+
 enum ES2C_ValidateAccountAndPassword
 {
 	eS2C_ValidateAccountAndPassword_OK,

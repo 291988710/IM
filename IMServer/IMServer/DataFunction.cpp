@@ -67,7 +67,7 @@ void DataFunction::Func_ValidateAccountAndPassword(CString strAccount,CString st
 {
 	//获取数据库的数据
 	Json::Value jsonRoot;
-	jsonRoot["MsgType"] = eC2S_ValidateAccountAndPassword;
+	jsonRoot["MsgType"] = eS2C_ValidateAccountAndPassword;
 
 	int nResult = g_pAdo->Ado_ValidateAccountAndPassword(strAccount,strPassword);
 	jsonRoot["Result"] = nResult;
@@ -111,7 +111,7 @@ void DataFunction::Func_QueryFriendList(CString strIp,CString strPort,CString st
 	std::vector<CString> vecAccount;
 	int nResult = g_pAdo->Ado_QueryFriendList(strAccount,vecAccount);
 	Json::Value jsonRoot;
-	jsonRoot["MsgType"] = eC2S_QueryFriendList;
+	jsonRoot["MsgType"] = eS2C_QueryFriendList;
 	jsonRoot["Result"] = nResult;
 
 	if (nResult == eS2C_QueryFriendList_OK)
